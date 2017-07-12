@@ -1,3 +1,7 @@
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 resource "aws_vpc" "default" {
   cidr_block                       = "${lookup(var.vpc, "cidr_block")}"
   instance_tenancy                 = "${lookup(var.vpc, "instance_tenancy")}"
@@ -19,10 +23,6 @@ resource "aws_internet_gateway" "igw" {
   ))}"
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 resource "aws_subnet" "public" {
   count = "${length(data.aws_availability_zones.available.names)}"
 
@@ -33,9 +33,9 @@ resource "aws_subnet" "public" {
 
   map_public_ip_on_launch = true
 
-  tags {
-    Name = "${var.name}-public-${element(data.aws_availability_zones.available.names, count.index)}"
-  }
+  tags = "${merge(var.default_tags, map(
+    "Name", format("%s-public-%s", var.name, element(data.aws_availability_zones.available.names, count.index))
+  ))}"
 }
 
 resource "aws_subnet" "private" {
@@ -46,7 +46,8 @@ resource "aws_subnet" "private" {
   cidr_block        = "${cidrsubnet(lookup(var.vpc, "cidr_block"), ceil(log(2 * length(data.aws_availability_zones.available.names), 2)), count.index + length(data.aws_availability_zones.available.names))}"
   availability_zone = "${element(data.aws_availability_zones.available.names, count.index)}"
 
-  tags {
-    Name = "${var.name}-private-${element(data.aws_availability_zones.available.names, count.index)}"
-  }
+  tags = "${merge(var.default_tags, map(
+    "Name", format("%s-private-%s", var.name, element(data.aws_availability_zones.available.names, count.index))
+  ))}"
 }
+
