@@ -1,7 +1,9 @@
+# get all available zones in the region
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
+# create the vpc
 resource "aws_vpc" "default" {
   cidr_block                       = "${lookup(var.vpc, "cidr_block")}"
   instance_tenancy                 = "${lookup(var.vpc, "instance_tenancy")}"
@@ -15,6 +17,7 @@ resource "aws_vpc" "default" {
   ))}"
 }
 
+# add an internet gateway
 resource "aws_internet_gateway" "igw" {
   vpc_id = "${aws_vpc.default.id}"
 
@@ -23,6 +26,7 @@ resource "aws_internet_gateway" "igw" {
   ))}"
 }
 
+# add public subnets in each available zones, limited by ${var.num_zones}
 resource "aws_subnet" "public" {
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
 
@@ -38,6 +42,7 @@ resource "aws_subnet" "public" {
   ))}"
 }
 
+# add private subnets in each available zones, limited by ${var.num_zones}
 resource "aws_subnet" "private" {
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
 
@@ -51,6 +56,7 @@ resource "aws_subnet" "private" {
   ))}"
 }
 
+# add public route table and its route association
 resource "aws_route_table" "public" {
   vpc_id           = "${aws_vpc.default.id}"
   tags             = "${merge(var.default_tags, map(
@@ -65,11 +71,13 @@ resource "aws_route" "public_internet_gateway" {
   gateway_id = "${aws_internet_gateway.igw.id}"
 }
 
+# allocate EIPs for NAT Gateways
 resource "aws_eip" "nat_eip" {
   count    = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
   vpc = true
 }
 
+# allocate nat gateways per private subnet
 resource "aws_nat_gateway" "nat_gw" {
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
   allocation_id = "${element(aws_eip.nat_eip.*.id, count.index)}"
@@ -77,7 +85,7 @@ resource "aws_nat_gateway" "nat_gw" {
   depends_on = ["aws_internet_gateway.igw"]
 }
 
-# for each of the private ranges, create a "private" route table.
+# for each private subnet, create a private route table.
 resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.default.id}"
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
@@ -95,12 +103,14 @@ resource "aws_route" "private_nat_gateway" {
   nat_gateway_id = "${element(aws_nat_gateway.nat_gw.*.id, count.index)}"
 }
 
+# associate private route tables and subnets
 resource "aws_route_table_association" "private" {
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
   subnet_id = "${element(aws_subnet.private.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.private.*.id, count.index)}"
 }
 
+# associate public route table and subnets
 resource "aws_route_table_association" "public" {
   count = "${length(slice(data.aws_availability_zones.available.names,0,2))}"
   subnet_id = "${element(aws_subnet.public.*.id, count.index)}"
