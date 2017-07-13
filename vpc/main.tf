@@ -58,62 +58,63 @@ resource "aws_subnet" "private" {
 
 # add public route table and its route association
 resource "aws_route_table" "public" {
-  vpc_id           = "${aws_vpc.default.id}"
-  tags             = "${merge(var.default_tags, map(
+  vpc_id = "${aws_vpc.default.id}"
+
+  tags = "${merge(var.default_tags, map(
     "Name", format("%s-rt-public", var.name)
   ))}"
 }
 
 resource "aws_route" "public_internet_gateway" {
-  route_table_id = "${aws_route_table.public.id}"
-  depends_on = ["aws_route_table.public"]
+  route_table_id         = "${aws_route_table.public.id}"
+  depends_on             = ["aws_route_table.public"]
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id = "${aws_internet_gateway.igw.id}"
+  gateway_id             = "${aws_internet_gateway.igw.id}"
 }
 
 # allocate EIPs for NAT Gateways
 resource "aws_eip" "nat_eip" {
-  count    = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
-  vpc = true
+  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  vpc   = true
 }
 
 # allocate nat gateways per private subnet
 resource "aws_nat_gateway" "nat_gw" {
-  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  count         = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
   allocation_id = "${element(aws_eip.nat_eip.*.id, count.index)}"
-  subnet_id = "${element(aws_subnet.public.*.id, count.index)}"
-  depends_on = ["aws_internet_gateway.igw"]
+  subnet_id     = "${element(aws_subnet.public.*.id, count.index)}"
+  depends_on    = ["aws_internet_gateway.igw"]
 }
 
 # for each private subnet, create a private route table.
 resource "aws_route_table" "private" {
   vpc_id = "${aws_vpc.default.id}"
-  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
-  tags             = "${merge(var.default_tags, map(
+  count  = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+
+  tags = "${merge(var.default_tags, map(
     "Name", format("%s-rt-private-%s", var.name, count.index)
   ))}"
 }
 
 # add a nat gateway to each private subnet's route table
 resource "aws_route" "private_nat_gateway" {
-  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
-  route_table_id = "${element(aws_route_table.private.*.id, count.index)}"
+  count                  = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  route_table_id         = "${element(aws_route_table.private.*.id, count.index)}"
   destination_cidr_block = "0.0.0.0/0"
-  depends_on = ["aws_route_table.private"]
-  nat_gateway_id = "${element(aws_nat_gateway.nat_gw.*.id, count.index)}"
+  depends_on             = ["aws_route_table.private"]
+  nat_gateway_id         = "${element(aws_nat_gateway.nat_gw.*.id, count.index)}"
 }
 
 # associate private route tables and subnets
 resource "aws_route_table_association" "private" {
-  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
-  subnet_id = "${element(aws_subnet.private.*.id, count.index)}"
+  count          = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  subnet_id      = "${element(aws_subnet.private.*.id, count.index)}"
   route_table_id = "${element(aws_route_table.private.*.id, count.index)}"
 }
 
 # associate public route table and subnets
 resource "aws_route_table_association" "public" {
-  count = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
-  subnet_id = "${element(aws_subnet.public.*.id, count.index)}"
+  count          = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  subnet_id      = "${element(aws_subnet.public.*.id, count.index)}"
   route_table_id = "${aws_route_table.public.id}"
 }
-
