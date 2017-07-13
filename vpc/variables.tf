@@ -11,6 +11,7 @@ variable "vpc" {
     enable_dns_hostnames             = true
     enable_classiclink               = false
     assign_generated_ipv6_cidr_block = false
+    spread_across                    = 2
   }
 }
 
