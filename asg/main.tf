@@ -85,7 +85,7 @@ resource "aws_launch_configuration" "lc" {
   user_data       = "${file(lookup(var.lc, "user_data"))}"
 }
 
-resource "aws_autoscaling_group" "main_asg" {
+resource "aws_autoscaling_group" "asg" {
   depends_on = ["aws_launch_configuration.lc"]
 
   name_prefix      = "${var.name}-asg-"
@@ -99,5 +99,5 @@ resource "aws_autoscaling_group" "main_asg" {
 
   load_balancers = ["${aws_elb.lb.id}"]
 
-  vpc_zone_identifier = "${var.asg_subnets}"
+  vpc_zone_identifier = ["${var.asg_subnets}"]
 }
