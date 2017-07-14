@@ -19,6 +19,11 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
+resource "aws_key_pair" "asg" {
+  key_name_prefix = "${var.name}-"
+  public_key      = "${lookup(var.lc, "ssh_public_key")}"
+}
+
 resource "aws_security_group" "lb" {
   name_prefix = "${var.name}-lb-sg-"
   description = "Allow http(s) access from var.allowed_networks."
