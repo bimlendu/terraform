@@ -49,7 +49,7 @@ resource "aws_security_group" "lb" {
 }
 
 resource "aws_elb" "lb" {
-  name_prefix = "${var.name}-lb-"
+  name = "${var.name}-lb"
 
   subnets         = "${var.elb_subnets}"
   internal        = "${lookup(var.elb, "internal")}"
