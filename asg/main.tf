@@ -48,10 +48,34 @@ resource "aws_security_group" "lb" {
   ))}"
 }
 
+resource "aws_security_group" "asg" {
+  name_prefix = "${var.name}-asg-sg-"
+  description = "Allow requests from the lb."
+  vpc_id      = "${lookup(var.asg, "vpc_id")}"
+
+  ingress {
+    from_port       = "${lookup(var.asg, "service_port")}"
+    to_port         = "${lookup(var.asg, "service_port")}"
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.lb.id}"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = "${merge(var.default_tags, map(
+    "Name", format("%s-asg-sg", var.name)
+  ))}"
+}
+
 resource "aws_elb" "lb" {
   name = "${var.name}-lb"
 
-  subnets         = ["${var.elb_subnets}"]
+  subnets         = ["${split(",", lookup(var.elb, "subnets"))}"]
   internal        = "${lookup(var.elb, "internal")}"
   security_groups = ["${aws_security_group.lb.id}"]
 
@@ -81,7 +105,7 @@ resource "aws_launch_configuration" "lc" {
   image_id        = "${data.aws_ami.ubuntu.id}"
   instance_type   = "${lookup(var.lc, "instance_type")}"
   key_name        = "${lookup(var.lc, "key_name")}"
-  security_groups = ["${lookup(var.lc, "security_groups")}"]
+  security_groups = ["${concat(list(aws_security_group.asg.id), split(",", lookup(var.lc, "security_groups")))}"]
   user_data       = "${lookup(var.lc, "user_data")}"
 }
 
@@ -99,5 +123,5 @@ resource "aws_autoscaling_group" "asg" {
 
   load_balancers = ["${aws_elb.lb.id}"]
 
-  vpc_zone_identifier = ["${var.asg_subnets}"]
+  vpc_zone_identifier = ["${split(",", lookup(var.asg, "subnets"))}"]
 }
