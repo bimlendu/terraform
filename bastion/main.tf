@@ -68,7 +68,7 @@ resource "aws_security_group" "internal_ssh" {
 
 resource "aws_key_pair" "bastion" {
   key_name_prefix = "bastion-"
-  public_key      = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDRrgzMwJGOVY94Vr+cXwrgUTIfJ1JqxOafenXxgunYJVQakyNPkp7jgmEDjNMuNUtxclauNWHimDhOVqEKHQqSbQUiCxlnvtEF3iHnca2BaiH3TgP4OwHrKItilmz8k/ngvRhVmefKfgARvJpTqxxiiGLaQpsiJ6TOWLwlsJ98T9T2F1X0eWXd7cRwZZuIBrfvR3ohtb1rhhUdZUTh4WU6cwXIUSi9sqEgbAQ2B7ogzLQxl0RXYzpEembXDl6ujKpzEizDBk+xq0eIemruFwAvUEufr8zIzjJj5CP9gUwueIk2DZDICLzumJiu5m9HtBlIyVGiG43l3AQG+iJiZmnf"
+  public_key      = "${lookup(var.bastion, "ssh_public_key")}"
 }
 
 resource "aws_instance" "bastion" {
