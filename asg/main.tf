@@ -1,3 +1,8 @@
+data "aws_iam_server_certificate" "lb" {
+  name_prefix = "${lookup(var.elb, "ssl_certificate_prefix")}"
+  latest      = true
+}
+
 resource "aws_security_group" "lb" {
   name_prefix = "${var.name}-lb-sg-"
   description = "Allow http(s) access from var.allowed_networks."
@@ -34,7 +39,7 @@ resource "aws_elb" "lb" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "${lookup(var.elb, "ssl_certificate_id")}"
+    ssl_certificate_id = "${data.aws_iam_server_certificate.lb.arn}"
   }
 
   health_check {
