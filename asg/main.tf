@@ -82,7 +82,7 @@ resource "aws_launch_configuration" "lc" {
   instance_type   = "${lookup(var.lc, "instance_type")}"
   key_name        = "${lookup(var.lc, "key_name")}"
   security_groups = ["${lookup(var.lc, "security_groups")}"]
-  user_data       = "${file(lookup(var.lc, "user_data"))}"
+  user_data       = "${lookup(var.lc, "user_data")}"
 }
 
 resource "aws_autoscaling_group" "asg" {
