@@ -19,3 +19,11 @@ variable "default_tags" {
   type        = "map"
   description = "Default tags to add to resources."
 }
+
+variable "elb_subnets" {
+  type = "list"
+}
+
+variable "asg_subnets" {
+  type = "list"
+}

@@ -25,7 +25,7 @@ resource "aws_security_group" "lb" {
 resource "aws_elb" "lb" {
   name_prefix = "${var.name}-lb-"
 
-  subnets         = "${var.elb_subnet}"
+  subnets         = "${var.elb_subnets}"
   internal        = "${lookup(var.elb, "internal")}"
   security_groups = ["${aws_security_group.lb.id}"]
 
