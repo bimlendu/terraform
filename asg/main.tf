@@ -119,7 +119,8 @@ resource "aws_autoscaling_group" "asg" {
 
   launch_configuration = "${aws_launch_configuration.lc.id}"
 
-  health_check_type = "${lookup(var.asg, "health_check_type")}"
+  health_check_type         = "${lookup(var.asg, "health_check_type")}"
+  health_check_grace_period = "${lookup(var.asg, "health_check_grace_period")}"
 
   load_balancers = ["${aws_elb.lb.id}"]
 
