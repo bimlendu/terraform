@@ -3,6 +3,22 @@ data "aws_iam_server_certificate" "lb" {
   latest      = true
 }
 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
+}
+
 resource "aws_security_group" "lb" {
   name_prefix = "${var.name}-lb-sg-"
   description = "Allow http(s) access from var.allowed_networks."
@@ -57,7 +73,7 @@ resource "aws_elb" "lb" {
 
 resource "aws_launch_configuration" "lc" {
   name_prefix     = "${var.name}-lc-"
-  image_id        = "${lookup(var.lc, "image_id")}"
+  image_id        = "${data.aws_ami.ubuntu.id}"
   instance_type   = "${lookup(var.lc, "instance_type")}"
   key_name        = "${lookup(var.lc, "key_name")}"
   security_groups = ["${lookup(var.lc, "security_groups")}"]
