@@ -104,7 +104,7 @@ resource "aws_launch_configuration" "lc" {
   name_prefix     = "${var.name}-lc-"
   image_id        = "${data.aws_ami.ubuntu.id}"
   instance_type   = "${lookup(var.lc, "instance_type")}"
-  key_name        = "${lookup(var.lc, "key_name")}"
+  key_name        = "${aws_key_pair.asg.key_name}"
   security_groups = ["${concat(list(aws_security_group.asg.id), split(",", lookup(var.lc, "security_groups")))}"]
   user_data       = "${lookup(var.lc, "user_data")}"
 }
