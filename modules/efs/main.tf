@@ -7,9 +7,7 @@ resource "aws_efs_file_system" "efs" {
   creation_token   = "${random_id.creation_token.hex}"
   performance_mode = "generalPurpose"
 
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-efs", var.name)
-  ))}"
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-efs", var.name))}"
 }
 
 resource "aws_efs_mount_target" "efs" {
@@ -32,9 +30,7 @@ resource "aws_security_group" "efs" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-efs-sg", var.name)
-  ))}"
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-efs-sg"))}"
 }
 
 resource "aws_security_group_rule" "allow-efs-clients" {
