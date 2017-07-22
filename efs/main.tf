@@ -37,28 +37,11 @@ resource "aws_security_group" "efs" {
   ))}"
 }
 
-resource "aws_security_group" "efs-clients" {
-  name_prefix = "efs-clients-"
-  description = "Allow traffic from instances for efs."
-  vpc_id      = "${var.vpc_id}"
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-efs-clients-sg", var.name)
-  ))}"
-}
-
 resource "aws_security_group_rule" "allow-efs-clients" {
   type                     = "ingress"
   from_port                = 2049
   to_port                  = 2049
   protocol                 = "tcp"
   security_group_id        = "${aws_security_group.efs.id}"
-  source_security_group_id = "${aws_security_group.efs-clients.id}"
+  source_security_group_id = "${var.source_security_groups}"
 }
