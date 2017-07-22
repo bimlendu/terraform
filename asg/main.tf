@@ -36,6 +36,27 @@ resource "aws_security_group" "lb" {
     cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
   }
 
+  ingress {
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
+  }
+
+  ingress {
+    from_port   = 9000
+    to_port     = 9000
+    protocol    = "tcp"
+    cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
+  }
+
+  ingress {
+    from_port   = 2015
+    to_port     = 2015
+    protocol    = "tcp"
+    cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -45,30 +66,6 @@ resource "aws_security_group" "lb" {
 
   tags = "${merge(var.default_tags, map(
     "Name", format("%s-lb-sg", var.name)
-  ))}"
-}
-
-resource "aws_security_group" "asg" {
-  name_prefix = "${var.name}-asg-sg-"
-  description = "Allow requests from the lb."
-  vpc_id      = "${lookup(var.asg, "vpc_id")}"
-
-  ingress {
-    from_port       = "${lookup(var.asg, "service_port")}"
-    to_port         = "${lookup(var.asg, "service_port")}"
-    protocol        = "tcp"
-    security_groups = ["${aws_security_group.lb.id}"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-asg-sg", var.name)
   ))}"
 }
 
@@ -87,6 +84,20 @@ resource "aws_elb" "lb" {
     ssl_certificate_id = "${data.aws_iam_server_certificate.lb.arn}"
   }
 
+  listener {
+    instance_port     = 9000
+    instance_protocol = "http"
+    lb_port           = 9000
+    lb_protocol       = "http"
+  }
+
+  listener {
+    instance_port     = 2015
+    instance_protocol = "http"
+    lb_port           = 2015
+    lb_protocol       = "http"
+  }
+
   health_check {
     healthy_threshold   = 5
     unhealthy_threshold = 2
@@ -101,12 +112,17 @@ resource "aws_elb" "lb" {
 }
 
 resource "aws_launch_configuration" "lc" {
-  name_prefix     = "${var.name}-lc-"
-  image_id        = "${data.aws_ami.ubuntu.id}"
-  instance_type   = "${lookup(var.lc, "instance_type")}"
-  key_name        = "${aws_key_pair.asg.key_name}"
-  security_groups = ["${concat(list(aws_security_group.asg.id), split(",", lookup(var.lc, "security_groups")))}"]
-  user_data       = "${lookup(var.lc, "user_data")}"
+  name_prefix          = "${var.name}-lc-"
+  image_id             = "${data.aws_ami.ubuntu.id}"
+  instance_type        = "${lookup(var.lc, "instance_type")}"
+  key_name             = "${aws_key_pair.asg.key_name}"
+  security_groups      = ["${lookup(var.lc, "security_groups")}"]
+  user_data            = "${lookup(var.lc, "user_data")}"
+  iam_instance_profile = "${lookup(var.lc, "iam_instance_profile")}"
+
+  lifecycle = {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_autoscaling_group" "asg" {
