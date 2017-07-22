@@ -26,19 +26,12 @@ resource "aws_key_pair" "asg" {
 
 resource "aws_security_group" "lb" {
   name_prefix = "${var.name}-lb-sg-"
-  description = "Allow http(s) access from var.allowed_networks."
+  description = "Security group for asg ALB."
   vpc_id      = "${lookup(var.asg, "vpc_id")}"
 
   ingress {
     from_port   = 443
     to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
-  }
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["${lookup(var.elb, "allowed_network")}"]
   }
