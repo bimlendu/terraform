@@ -1,6 +1,35 @@
-data "aws_iam_server_certificate" "lb" {
-  name_prefix = "${lookup(var.elb, "ssl_certificate_prefix")}"
-  latest      = true
+resource "tls_private_key" "self_signed" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P384"
+}
+
+resource "tls_self_signed_cert" "self_signed" {
+  key_algorithm   = "${tls_private_key.self_signed.algorithm}"
+  private_key_pem = "${tls_private_key.self_signed.private_key_pem}"
+
+  subject {
+    common_name  = "${var.name}-jenkins.com"
+    organization = "${upper(var.name)}, Inc"
+  }
+
+  validity_period_hours = 2400
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+    "client_auth",
+  ]
+}
+
+resource "aws_iam_server_certificate" "self_signed" {
+  name_prefix      = "${var.name}-jenkins"
+  certificate_body = "${tls_self_signed_cert.self_signed.cert_pem}"
+  private_key      = "${tls_private_key.self_signed.private_key_pem}"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 data "aws_ami" "ubuntu" {
@@ -74,7 +103,7 @@ resource "aws_elb" "lb" {
     instance_protocol  = "http"
     lb_port            = 443
     lb_protocol        = "https"
-    ssl_certificate_id = "${data.aws_iam_server_certificate.lb.arn}"
+    ssl_certificate_id = "${aws_iam_server_certificate.self_signed.arn}"
   }
 
   listener {
