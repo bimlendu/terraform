@@ -1,21 +1,17 @@
 data "aws_ami" "bastion" {
   most_recent = true
-  owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn-ami-hvm*"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+
+  owners = ["099720109477"] # Canonical
 }
 
 resource "aws_security_group" "bastion" {
@@ -37,33 +33,7 @@ resource "aws_security_group" "bastion" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-bastion-sg", var.name)
-  ))}"
-}
-
-resource "aws_security_group" "internal_ssh" {
-  name        = "internal-ssh"
-  description = "Allow ssh from bastion."
-  vpc_id      = "${lookup(var.bastion, "vpc_id")}"
-
-  ingress {
-    from_port       = 22
-    to_port         = 22
-    protocol        = "tcp"
-    security_groups = ["${aws_security_group.bastion.id}"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-internal-ssh-sg", var.name)
-  ))}"
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-bastion-sg"))}"
 }
 
 resource "aws_key_pair" "bastion" {
@@ -78,7 +48,5 @@ resource "aws_instance" "bastion" {
   subnet_id              = "${lookup(var.bastion, "subnet_id")}"
   vpc_security_group_ids = ["${aws_security_group.bastion.id}"]
 
-  tags = "${merge(var.default_tags, map(
-    "Name", format("%s-bastion", var.name)
-  ))}"
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-bastion"))}"
 }
