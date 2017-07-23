@@ -46,3 +46,7 @@ module "asg" {
   }
 }
 ```
+
+#### Dependency Graph
+
+![Dependency Graph](graph.png)
