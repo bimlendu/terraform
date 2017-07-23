@@ -14,7 +14,7 @@ export JENKINS_VERSION=${jenkins_version}
 export JENKINS_ADMIN_USERNAME=${jenkins_admin_username}
 export JENKINS_ADMIN_PASSWORD=${jenkins_admin_password}
 
-export JENKINS_PLUGINS=${jenkins_plugins}
+export JENKINS_PLUGINS="${jenkins_plugins}"
 
 export EFS_FILESYSTEM_DNS=${efs_filesystem_dns}
 
