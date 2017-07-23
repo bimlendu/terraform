@@ -6,8 +6,7 @@ variable "subnets" {
 }
 
 variable "default_tags" {
-  type        = "map"
-  description = "Default tags to add to resources."
+  type = "map"
 }
 
 variable "source_security_groups" {}
