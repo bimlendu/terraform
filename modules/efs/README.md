@@ -21,5 +21,4 @@ module "efs" {
   default_tags           = "${var.default_tags}"
   source_security_groups = "${aws_security_group.jenkins.id}"
 }
-
 ```
