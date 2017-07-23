@@ -12,6 +12,7 @@ This project creates following resources:
 * Security groups with minimal access everywhere.
 * A CodeDeploy app and deploy group.
 * An S3 bucket to store codedeploy zips.
+* Instances are configured by ansible repo provided by `ansible_repo` variable.
 
 #### Inputs required
 
