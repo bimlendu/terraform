@@ -1,21 +1,17 @@
 variable "name" {}
 
 variable "lc" {
-  type        = "map"
-  description = "Vars for bastion host."
+  type = "map"
 }
 
 variable "elb" {
-  type        = "map"
-  description = "Vars for bastion host."
+  type = "map"
 }
 
 variable "asg" {
-  type        = "map"
-  description = "Vars for bastion host."
+  type = "map"
 }
 
 variable "default_tags" {
-  type        = "map"
-  description = "Default tags to add to resources."
+  type = "map"
 }
