@@ -1,7 +1,5 @@
 ## AWS AutoScaling Group
 
-This module creates an AWS AutoScaling Group.
-
 #### Inputs required
 
 | Variable | Type | Description |
