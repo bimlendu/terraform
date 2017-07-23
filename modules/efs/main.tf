@@ -7,7 +7,7 @@ resource "aws_efs_file_system" "efs" {
   creation_token   = "${random_id.creation_token.hex}"
   performance_mode = "generalPurpose"
 
-  tags = "${merge(var.default_tags, map( "Name", "${var.name}-efs", var.name))}"
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-efs"))}"
 }
 
 resource "aws_efs_mount_target" "efs" {
