@@ -1,9 +1,9 @@
 variable "name" {}
 
 variable "bastion" {
-  type        = "map"
+  type = "map"
 }
 
 variable "default_tags" {
-  type        = "map"
+  type = "map"
 }
