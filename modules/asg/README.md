@@ -45,5 +45,4 @@ module "asg" {
     subnets         = "${join(",", module.vpc.public_subnets)}"
   }
 }
-
 ```
