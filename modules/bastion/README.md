@@ -27,3 +27,7 @@ module "bastion" {
   default_tags = "${var.default_tags}"
 }
 ```
+
+#### Dependency Graph
+
+![Dependency Graph](graph.png)

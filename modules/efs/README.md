@@ -22,3 +22,7 @@ module "efs" {
   source_security_groups = "${aws_security_group.jenkins.id}"
 }
 ```
+
+#### Dependency Graph
+
+![Dependency Graph](graph.png)

@@ -30,3 +30,7 @@ module "vpc" {
 ```
 
 *spread_across* ensures the vpc subnets are spread-across these many number of availability zones in the region.
+
+#### Dependency Graph
+
+![Dependency Graph](graph.png)
