@@ -29,4 +29,4 @@ module "vpc" {
 }
 ```
 
-*spread_across* ensures the vpc subnets are spread-across these many number of availanility zones in the region.
+*spread_across* ensures the vpc subnets are spread-across these many number of availability zones in the region.
