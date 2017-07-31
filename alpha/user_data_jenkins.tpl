@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
 
-set -ex
-
 export DEBIAN_FRONTEND=noninteractive
 apt-get -qq update
 apt-get -qq install python python-pip python-dev libssl-dev build-essential ruby wget awscli jq graphviz tree glances -y
 pip install --upgrade pip
 
-pip install ansible
+pip install ansible==2.2.0.0
 
 ## needed by jenkins role
 export JENKINS_VERSION=${jenkins_version}
@@ -41,4 +39,4 @@ export SONARQUBE_DB_NAME=${sonarqube_db_name}
 export SONARQUBE_DB_USER=${sonarqube_db_user}
 export SONARQUBE_DB_PASSWORD=${sonarqube_db_password}
 
-ansible-pull -o -C master -d /opt/ansible -i localhost, -U ${ansible_repo}
+ansible-pull -C master -d /opt/ansible -i localhost, -U ${ansible_repo}
