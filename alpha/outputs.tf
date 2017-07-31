@@ -13,3 +13,7 @@ output "sonarqube_endpoint" {
 output "caddyserver_endpoint" {
   value = "http://${module.asg.elb_dns_name}:2015"
 }
+
+output "autoscaling_group_name" {
+  value = "${module.asg.group_name}"
+}
