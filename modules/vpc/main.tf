@@ -78,6 +78,8 @@ resource "aws_nat_gateway" "nat_gw" {
   allocation_id = "${element(aws_eip.nat_eip.*.id, count.index)}"
   subnet_id     = "${element(aws_subnet.public.*.id, count.index)}"
   depends_on    = ["aws_internet_gateway.igw"]
+
+  tags = "${merge(var.default_tags, map( "Name", "${var.name}-nat-gw-${element(data.aws_availability_zones.available.names, count.index)}"))}"
 }
 
 # for each private subnet, create a private route table.
