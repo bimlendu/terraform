@@ -114,7 +114,7 @@ resource "aws_route_table_association" "public" {
 # vpc s3 endpoint
 resource "aws_vpc_endpoint" "s3" {
   vpc_id       = "${aws_vpc.default.id}"
-  service_name = "com.amazonaws.${data.aws_region.name}.s3"
+  service_name = "com.amazonaws.${data.aws_region.current.name}.s3"
 }
 
 resource "aws_vpc_endpoint_route_table_association" "private_s3" {
