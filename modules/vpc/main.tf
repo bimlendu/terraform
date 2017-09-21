@@ -79,7 +79,8 @@ resource "aws_nat_gateway" "nat_gw" {
   subnet_id     = "${element(aws_subnet.public.*.id, count.index)}"
   depends_on    = ["aws_internet_gateway.igw"]
 
-  tags = "${merge(var.default_tags, map( "Name", "${var.name}-nat-gw-${element(data.aws_availability_zones.available.names, count.index)}"))}"
+  # not yet supported. https://github.com/terraform-providers/terraform-provider-aws/issues/849
+  # tags = "${merge(var.default_tags, map( "Name", "${var.name}-nat-gw-${element(data.aws_availability_zones.available.names, count.index)}"))}"
 }
 
 # for each private subnet, create a private route table.
