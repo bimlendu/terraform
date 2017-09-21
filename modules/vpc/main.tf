@@ -1,4 +1,8 @@
 # get all available zones in the region
+data "aws_region" "current" {
+  current = true
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -105,4 +109,21 @@ resource "aws_route_table_association" "public" {
   count          = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
   subnet_id      = "${element(aws_subnet.public.*.id, count.index)}"
   route_table_id = "${aws_route_table.public.id}"
+}
+
+# vpc s3 endpoint
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id       = "${aws_vpc.default.id}"
+  service_name = "com.amazonaws.${data.aws_region.name}.s3"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "private_s3" {
+  count           = "${length(slice(data.aws_availability_zones.available.names,0,min(lookup(var.vpc, "spread_across"), length(data.aws_availability_zones.available.names))))}"
+  vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
+  route_table_id  = "${element(aws_route_table.private.*.id, count.index)}"
+}
+
+resource "aws_vpc_endpoint_route_table_association" "public_s3" {
+  vpc_endpoint_id = "${aws_vpc_endpoint.s3.id}"
+  route_table_id  = "${aws_route_table.public.id}"
 }
